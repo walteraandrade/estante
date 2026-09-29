@@ -5,15 +5,20 @@ import { fetchMeta, type Meta } from '../src/meta.js'
 
 type Shared = { name: string; url: string; at: string }
 
-const HEAD = /^\[(\d\d)\/(\d\d)\/(\d\d), (\d\d):(\d\d):(\d\d)\] ([^:]+): /gm
+// iPhone: "[29/09/26, 14:03:11] Nome: …"   Android: "29/09/2026 14:03 - Nome: …"
+const HEAD = /^\[?(\d{1,2})\/(\d{1,2})\/(\d{2,4}),?\s(\d{1,2}):(\d\d)(?::(\d\d))?(?:\]\s|\s-\s)([^:\n]+): /gm
 const MUSIC = /https?:\/\/(?:open\.spotify\.com|music\.youtube\.com|(?:www\.|m\.)?youtube\.com|youtu\.be|[\w-]+\.bandcamp\.com)\/[^\s<>"]+/g
 const BRT_OFFSET_H = 3
 const NOT_A_RECORD = /open\.spotify\.com\/(playlist|artist|wrapped|show|episode|user)\//
 
-const firstName = (sender: string) => sender.replace(/[~  ]/g, ' ').trim().split(/\s+/)[0]
+// Android shows unsaved contacts as a phone number; keep it whole rather than collapsing everyone into "+55".
+const firstName = (sender: string) => {
+  const clean = sender.replace(/[~\s]+/g, ' ').trim()
+  return /^\+?[\d ()-]+$/.test(clean) ? clean : clean.split(' ')[0]
+}
 
-const toIso = ([dd, mm, yy, h, m, s]: string[]) =>
-  new Date(Date.UTC(2000 + Number(yy), Number(mm) - 1, Number(dd), Number(h) + BRT_OFFSET_H, Number(m), Number(s))).toISOString().replace(/\.\d{3}Z$/, 'Z')
+const toIso = ([dd, mm, yy, h, m, s = '0']: string[]) =>
+  new Date(Date.UTC(Number(yy) + (yy.length === 2 ? 2000 : 0), Number(mm) - 1, Number(dd), Number(h) + BRT_OFFSET_H, Number(m), Number(s))).toISOString().replace(/\.\d{3}Z$/, 'Z')
 
 export const canonical = (raw: string) => {
   const u = new URL(raw.replace(/[).,;!?]+$/, ''))

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { createApp } from '../src/api.js'
 import { openDb } from '../src/db.js'
 import { parseBandcamp, parseSpotify, parseYoutube, isKnownHost } from '../src/meta.js'
+import { parseChat } from '../scripts/import-chat.js'
 
 const SPOTIFY_ALBUM = `<meta property="og:title" content="Inferno - Album by Boards of Canada | Spotify"/>
 <meta property="og:description" content="Boards of Canada · album · 2026 · 18 songs"/>
@@ -159,4 +160,21 @@ test('meta route reads a spotify link through the injected fetch', async () => {
   const me = await login('Walter')
   const res = await call(`/meta?url=${encodeURIComponent('https://open.spotify.com/track/6T8B')}`, { cookie: me })
   assert.equal((await res.json()).title, 'Axes')
+})
+
+test('chat export from iPhone and Android both yield links with sender and time', () => {
+  const iphone = `[29/09/26, 14:03:11] Ana Souza: ouçam isso https://open.spotify.com/intl-pt/album/abc?si=x
+[29/09/26, 14:05:00] ~ Bruno: https://youtu.be/xyz`
+  const android = `29/09/2026 14:03 - As mensagens e ligações são protegidas com a criptografia de ponta a ponta.
+29/09/2026 14:04 - Ana Souza: ouçam isso
+https://open.spotify.com/album/abc
+29/09/2026 14:07 - +55 11 91234-5678: https://thenecks.bandcamp.com/album/buoyant.`
+  assert.deepEqual(parseChat(iphone), [
+    { name: 'Ana', url: 'https://open.spotify.com/album/abc', at: '2026-09-29T17:03:11Z' },
+    { name: 'Bruno', url: 'https://www.youtube.com/watch?v=xyz', at: '2026-09-29T17:05:00Z' },
+  ])
+  assert.deepEqual(parseChat(android), [
+    { name: 'Ana', url: 'https://open.spotify.com/album/abc', at: '2026-09-29T17:04:00Z' },
+    { name: '+55 11 91234-5678', url: 'https://thenecks.bandcamp.com/album/buoyant', at: '2026-09-29T17:07:00Z' },
+  ])
 })

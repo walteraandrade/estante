@@ -366,6 +366,15 @@ const submitLogin = async (e) => {
   }
 }
 
+// Links arrive as ?url= (iOS Shortcut) or via the Android share sheet, where WhatsApp puts the link inside ?text=.
+const sharedLink = () => {
+  if (!location.search) return ''
+  const q = new URLSearchParams(location.search)
+  history.replaceState(null, '', location.pathname)
+  const found = ['url', 'text', 'title'].map((k) => q.get(k)?.match(/https?:\/\/[^\s<>"]+/)?.[0]).find(Boolean)
+  return found?.replace(/[).,;!?]+$/, '') ?? ''
+}
+
 const boot = () => {
   $('#kindFilter').addEventListener('click', (e) => {
     const b = e.target.closest('button')
@@ -388,9 +397,13 @@ const boot = () => {
   $('#loginForm').addEventListener('submit', submitLogin)
   $('#addForm').url.addEventListener('change', fillFromLink)
   $('#tagsInput').addEventListener('input', paintTagPicker)
-  loadAll().catch((e) => {
-    $('#count').textContent = `não consegui abrir a estante: ${e.message}`
-  })
+  const shared = sharedLink()
+  $('#composerUrl').value = shared
+  loadAll()
+    .then(() => shared && openAdd(shared))
+    .catch((e) => {
+      $('#count').textContent = `não consegui abrir a estante: ${e.message}`
+    })
 }
 
 boot()
