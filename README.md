@@ -36,6 +36,30 @@ vercel deploy --prod
 
 Vercel picks up `src/index.ts` as the Hono entry and serves `public/` from the CDN.
 
+## Do WhatsApp para a estante
+
+**Um link por vez, pelo menu de compartilhar.** A estante abre com o formulário já preenchido. Se a pessoa ainda não entrou, pede login primeiro.
+
+- **Android:** abra a estante no Chrome, menu ⋮ → *Instalar app* (ou *Adicionar à tela inicial*). A partir daí, no WhatsApp: segure o link → *Compartilhar* → **estante**.
+- **iPhone:** o Safari não tem esse menu para sites, então use um Atalho. No app Atalhos, crie um novo com:
+  1. *Receber* **URLs e Texto** da **Planilha de Compartilhamento**
+  2. *Codificar URL* (Entrada do Atalho)
+  3. *Texto*: `https://<seu-domínio>/index.html?url=` seguido da variável *URL Codificado*
+  4. *Abrir URLs* (Texto)
+
+  Depois disso, no WhatsApp: segure o link → *Compartilhar* → **estante**.
+
+Qualquer `…/index.html?url=<link>` (ou `?text=` com um link no meio) funciona assim.
+
+**O histórico inteiro, de uma vez.** Exporte a conversa (*Exportar conversa → Sem mídia*) no iPhone ou no Android e rode:
+
+```bash
+pnpm tsx scripts/import-chat.ts conversa.txt            # dry run
+pnpm tsx scripts/import-chat.ts conversa.txt --apply    # grava (use as envs de produção para mandar ao Turso)
+```
+
+Links que já estão na estante ficam de fora, então dá para reexportar e rodar de novo. No Android, contatos não salvos chegam como número de telefone e entram na estante com esse nome.
+
 ## Model
 
 - `users`: `id`, `name` (unique, case-insensitive), `created_at`.
