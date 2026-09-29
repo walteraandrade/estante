@@ -25,6 +25,10 @@
           <h2 class="label">quem trouxe</h2>
           <nav class="people" id="people" aria-label="De quem"></nav>
         </section>
+        <section class="block" id="modBlock" hidden>
+          <h2 class="label">moderação</h2>
+          <button class="person" id="reviewOpen" type="button">revisar a estante<span class="n" id="reviewCount"></span></button>
+        </section>
         <section class="block" id="tagsBlock" hidden>
           <h2 class="label">temas</h2>
           <nav class="pills" id="tags" aria-label="Temas"></nav>
@@ -72,6 +76,20 @@
         <div class="actions">
           <button value="cancel" formnovalidate class="ghost">cancelar</button>
           <button class="primary" value="default">entrar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="reviewDialog" class="sheet wide">
+      <form method="dialog">
+        <h2>moderação</h2>
+        <p class="hint">Nada some de vez: o que foi tirado da estante fica aqui e pode voltar.</p>
+        <h3 class="label">esperando aprovação</h3>
+        <div class="review-list" id="heldList"></div>
+        <h3 class="label">tiradas da estante</h3>
+        <div class="review-list" id="removedList"></div>
+        <div class="actions">
+          <button value="cancel" class="ghost">fechar</button>
         </div>
       </form>
     </dialog>
