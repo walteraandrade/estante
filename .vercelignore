@@ -1,0 +1,8 @@
+.env*
+*.db
+*.db-*
+.agents
+.claude
+skills-lock.json
+test
+designs

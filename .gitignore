@@ -1,0 +1,8 @@
+node_modules
+*.db
+*.db-*
+.env*
+.vercel
+.agents
+.claude
+skills-lock.json

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Lombadas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@600;800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#15110e;font-family:'Instrument Sans',sans-serif;color:#f0e5d3}
+a{color:#e0a458}a:hover{color:#f2c287}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1000px; box-sizing: border-box; padding: 48px 56px; background: #15110e; display: flex; flex-direction: column; gap: 28px; overflow: hidden">
+  <header style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 72px; line-height: 0.85; letter-spacing: -0.03em">estante</h1>
+      <span style="font-size: 15px; color: #a8998a">estudos de psicoacústica · 13 lombadas, 4 pessoas</span>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center">
+      <input aria-label="Buscar" placeholder="procurar na estante" style="width: 280px; height: 44px; box-sizing: border-box; padding: 0 14px; background: #1f1813; border: 1px solid #3a2d23; border-radius: 6px; color: #f0e5d3; font: inherit">
+      <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #e0a458; color: #1b120a; text-decoration: none; font-weight: 600; border-radius: 6px">+ pôr na estante</a>
+    </div>
+  </header>
+
+  <div style="display: flex; gap: 48px">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 30px; min-width: 0">
+      <section style="display: flex; flex-direction: column">
+        <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.12em; color: #a8998a; margin-bottom: 12px">PRATELEIRA DE DISCOS</span>
+        <div style="display: flex; align-items: flex-end; gap: 4px; height: 330px">
+          <sc-for list="{{albums}}" as="s" hint-placeholder-count="10">
+            <div style="{{s.spine}}">
+              <span style="{{s.label}}">{{s.t}}<span style="font-weight: 500; opacity: 0.75">  ·  {{s.a}}</span></span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height: 16px; background: #2b2019; border-top: 2px solid #3d2e23"></div>
+      </section>
+      <section style="display: flex; flex-direction: column">
+        <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.12em; color: #a8998a; margin-bottom: 12px">PRATELEIRA DE FAIXAS</span>
+        <div style="display: flex; align-items: flex-end; gap: 4px; height: 230px">
+          <sc-for list="{{tracks}}" as="s" hint-placeholder-count="4">
+            <div style="{{s.spine}}">
+              <span style="{{s.label}}">{{s.t}}<span style="font-weight: 500; opacity: 0.75">  ·  {{s.a}}</span></span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height: 16px; background: #2b2019; border-top: 2px solid #3d2e23"></div>
+      </section>
+    </div>
+
+    <aside style="width: 360px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; padding: 24px; box-sizing: border-box; background: #1f1813; border: 1px solid #3a2d23; border-radius: 10px">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #e0a458">TIRADO DA ESTANTE</span>
+      <div style="position: relative; width: 312px; height: 312px; background: #c9481f; border-radius: 4px; overflow: hidden">
+        <div style="position: absolute; left: 40px; top: 60px; width: 200px; height: 200px; border-radius: 50%; background: #f0b53c"></div>
+      </div>
+      <h2 style="margin: 0; font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 34px; line-height: 1">Inferno</h2>
+      <span style="font-size: 16px">Boards of Canada · 2026</span>
+      <span style="font-size: 14px; color: #a8998a">disco · pôs aqui: Walter · há 2 dias</span>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">[por que ouvir, escrito por quem recomendou]</p>
+      <div style="display: flex; gap: 10px; align-items: center; margin-top: auto">
+        <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 16px; border: 1px solid #e0a458; border-radius: 6px; text-decoration: none">ouvir no Spotify</a>
+        <span style="font-size: 13px; color: #a8998a">#ambient</span>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const spine = (h, pulled) => ([t, a, bg, fg, w], i) => {
+      const height = h - (i % 3) * 14;
+      const size = Math.min(17, Math.floor((height - 28) / ((t + a).length + 5) / 0.56));
+      return {
+      t, a,
+      spine: 'width: ' + w + 'px; height: ' + height + 'px; flex-shrink: 0; background: ' + bg + '; border-radius: 2px 2px 0 0; display: flex; align-items: center; justify-content: center; overflow: hidden' + (pulled && pulled === t ? '; transform: translateY(-36px); box-shadow: 0 0 0 2px #e0a458' : ''),
+      label: 'writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-family: League Spartan, sans-serif; font-weight: 800; font-size: ' + size + 'px; letter-spacing: 0.02em; color: ' + fg
+      };
+    };
+    const albums = [
+      ['Laughing Stock', 'Talk Talk', '#2d4a3e', '#d8c9a3', 58],
+      ['Inferno', 'Boards of Canada', '#c9481f', '#f0b53c', 64],
+      ['The Blue Yusef Lateef', 'Yusef Lateef', '#1f3f8f', '#e8e2d0', 54],
+      ['Mateo Solo Bien Se Lame', 'Eduardo Mateo', '#6b2d2d', '#e9d8b4', 52],
+      ['Pet Sounds', 'The Beach Boys', '#2f6b4f', '#f2e3b3', 60],
+      ['Remain in Light', 'Talking Heads', '#b8322a', '#f0e5d3', 56],
+      ['Promises', 'Floating Points', '#d9d3c4', '#2a2a2a', 50],
+      ['Romance', 'Fontaines D.C.', '#8a1d3a', '#f0e5d3', 54],
+      ['Frog in Boiling Water', 'DIIV', '#4b5d3a', '#e6dcc6', 58],
+      ['PAINLESS', 'Nilüfer Yanya', '#e2c7a3', '#3a2418', 50]
+    ].map(spine(320, 'Inferno'));
+    const tracks = [
+      ['Axes', 'Okonski', '#e9e4d6', '#2b3a67', 44],
+      ['Um Girassol da Cor do Seu Cabelo', 'Milton, Lô', '#d9a441', '#3b2415', 44],
+      ['Lotus Light', 'Tim Hecker', '#3c4f5c', '#dbe7ec', 40],
+      ['Yerevan Sunrise', 'Tigran Hamasyan', '#7a5230', '#f3e2c4', 42],
+      ['Buoyant', 'The Necks', '#1e2b33', '#b9d0da', 40],
+      ['Zero Sum', 'The Smile', '#caa23a', '#1b120a', 40]
+    ].map(spine(220));
+    return { albums, tracks };
+  }
+}
+</script>
+</body>
+</html>

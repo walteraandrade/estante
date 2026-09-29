@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Espectrograma</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@600;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Instrument+Sans:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#0a0b0a;font-family:'Instrument Sans',sans-serif;color:#e4ebe1}
+a{color:#9ef08a}a:hover{color:#c6f9b8}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1000px; box-sizing: border-box; padding: 48px 56px; background: #0a0b0a; display: flex; flex-direction: column; gap: 22px; overflow: hidden">
+  <header style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; color: #9ef08a">ESTUDOS DE PSICOACÚSTICA / CANAL 01</span>
+      <h1 style="margin: 0; font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 96px; line-height: 0.8; letter-spacing: -0.04em">estante</h1>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #8c9788">
+      <span>sessão: <strong style="color: #e4ebe1; font-weight: 500">Walter</strong></span>
+      <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #9ef08a; color: #0a0b0a; text-decoration: none; font-weight: 500; border-radius: 3px">+ gravar recomendação</a>
+    </div>
+  </header>
+
+  <div style="display: flex; justify-content: space-between; border-top: 1px solid #243024; border-bottom: 1px solid #243024; padding: 8px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8c9788">
+    <span>20 Hz</span><span>50</span><span>100</span><span>200</span><span>500</span><span style="color: #9ef08a">1 kHz</span><span>2k</span><span>5k</span><span>10k</span><span>20 kHz</span>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px">
+    <button style="height: 36px; padding: 0 14px; background: #1a221a; color: #e4ebe1; border: 1px solid #3b4a3a; border-radius: 3px; font: inherit">tudo 8</button>
+    <button style="height: 36px; padding: 0 14px; background: none; color: #8c9788; border: 1px solid #243024; border-radius: 3px; font: inherit">discos 5</button>
+    <button style="height: 36px; padding: 0 14px; background: none; color: #8c9788; border: 1px solid #243024; border-radius: 3px; font: inherit">faixas 3</button>
+    <span style="width: 24px"></span>
+    <span style="color: #8c9788">filtro:</span>
+    <span style="color: #9ef08a">#jazz</span><span style="color: #8c9788">#ambient</span><span style="color: #8c9788">#brasileira</span><span style="color: #8c9788">#pós-rock</span>
+    <label style="margin-left: auto; display: flex; align-items: center; gap: 8px; color: #8c9788">buscar<input style="width: 260px; height: 36px; box-sizing: border-box; background: #0f130f; border: 1px solid #243024; border-radius: 3px; color: #e4ebe1; padding: 0 10px; font: inherit" placeholder="título, artista, nota"></label>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 40px 64px minmax(0, 1fr) 70px 60px 260px 90px 110px; column-gap: 16px; padding: 0 0 8px; border-bottom: 1px solid #243024; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em; color: #8c9788">
+    <span>CH</span><span></span><span>OBRA</span><span>TIPO</span><span>ANO</span><span>ESPECTRO</span><span>POR</span><span>TEMA</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+      <div style="display: grid; grid-template-columns: 40px 64px minmax(0, 1fr) 70px 60px 260px 90px 110px; column-gap: 16px; align-items: center; height: 84px; border-bottom: 1px solid #1a221a">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8c9788">{{it.ch}}</span>
+        <div style="{{it.cover}}"><div style="{{it.dot}}"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-family: 'League Spartan', sans-serif; font-weight: 600; font-size: 22px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{it.t}}</span>
+          <span style="font-size: 14px; color: #a9b3a5">{{it.a}}</span>
+        </div>
+        <span style="{{it.kindStyle}}">{{it.k}}</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #a9b3a5">{{it.y}}</span>
+        <div style="display: flex; align-items: flex-end; gap: 3px; height: 40px">
+          <sc-for list="{{it.bars}}" as="b" hint-placeholder-count="32">
+            <span style="{{b}}"></span>
+          </sc-for>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px">{{it.by}}</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9ef08a">#{{it.tag}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const raw = [
+      ['Laughing Stock', 'Talk Talk', '1991', 'disco', 'Walter', 'pós-rock', '#2d4a3e', '#d8c9a3'],
+      ['Inferno', 'Boards of Canada', '2026', 'disco', 'Walter', 'ambient', '#b8431f', '#f0b53c'],
+      ['Axes', 'Okonski, Rachel Kitchlew', '2026', 'faixa', 'Beto', 'jazz', '#e9e4d6', '#2b3a67'],
+      ['The Blue Yusef Lateef', 'Yusef Lateef', '1968', 'disco', 'Gabriel', 'jazz', '#1f3f8f', '#e8e2d0'],
+      ['Um Girassol da Cor do Seu Cabelo', 'Milton Nascimento, Lô Borges', '1972', 'faixa', 'Gabriel', 'brasileira', '#d9a441', '#5a3a22'],
+      ['Mateo Solo Bien Se Lame', 'Eduardo Mateo', '1972', 'disco', 'Walter', 'latina', '#6b2d2d', '#e9d8b4'],
+      ['Lotus Light', 'Tim Hecker', '2023', 'faixa', 'Yuri', 'ambient', '#3c4f5c', '#a8c3cf'],
+      ['Pet Sounds', 'The Beach Boys', '1966', 'disco', 'Yuri', 'pop', '#2f6b4f', '#f2e3b3']
+    ];
+    const seed = (s, i) => Math.abs(Math.sin((s.charCodeAt(i % s.length) + 1) * (i + 3) * 12.9898)) % 1;
+    const items = raw.map(([t, a, y, k, by, tag, c1, c2], i) => ({
+      ch: String(i + 1).padStart(2, '0'), t, a, y, k, by, tag,
+      cover: 'position: relative; width: 64px; height: 64px; background: ' + c1 + '; border-radius: 2px; overflow: hidden',
+      dot: 'position: absolute; width: 34px; height: 34px; left: ' + (8 + i * 3) + 'px; top: ' + (10 + (i % 3) * 6) + 'px; border-radius: 50%; background: ' + c2,
+      kindStyle: 'font-family: IBM Plex Mono, monospace; font-size: 12px; color: ' + (k === 'disco' ? '#f0b53c' : '#8fd3f0'),
+      bars: Array.from({ length: 32 }, (_, j) => {
+        const h = Math.round(6 + 34 * seed(t, j) * (1 - Math.abs(j - 12) / 40));
+        return 'width: 5px; height: ' + h + 'px; background: ' + (h > 30 ? '#9ef08a' : '#3b5a38');
+      })
+    }));
+    return { items };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Encarte de jazz</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700;900&amp;family=Instrument+Sans:wght@400;600&amp;display=swap">
+<style>
+body{margin:0;background:#0e1116;font-family:'Instrument Sans',sans-serif;color:#f3eee2}
+a{color:#f3c13a}a:hover{color:#ffd970}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1000px; box-sizing: border-box; padding: 48px 56px; background: #0e1116; display: flex; flex-direction: column; gap: 32px; overflow: hidden">
+  <header style="display: flex; justify-content: space-between; align-items: center; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.18em">
+    <span>ESTUDOS DE PSICOACÚSTICA — VOL. 1</span>
+    <nav style="display: flex; gap: 28px; align-items: center">
+      <a href="#" style="color: #f3eee2; text-decoration: none; border-bottom: 3px solid #f3c13a; padding-bottom: 4px">TUDO</a>
+      <a href="#" style="color: #b7b2a6; text-decoration: none">DISCOS</a>
+      <a href="#" style="color: #b7b2a6; text-decoration: none">FAIXAS</a>
+      <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; background: #f3c13a; color: #0e1116; text-decoration: none">+ RECOMENDAR</a>
+    </nav>
+  </header>
+
+  <section style="display: flex; gap: 48px">
+    <div style="position: relative; width: 520px; height: 520px; flex-shrink: 0; background: #3b63f5; overflow: hidden">
+      <div style="position: absolute; left: 32px; top: 28px; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.2em; color: #0e1116">THE BLUE</div>
+      <div style="position: absolute; left: 24px; top: 200px; font-family: 'League Spartan', sans-serif; font-weight: 900; font-size: 150px; line-height: 0.8; letter-spacing: -0.05em; color: #f3c13a">YUSEF</div>
+      <div style="position: absolute; left: 24px; top: 322px; font-family: 'League Spartan', sans-serif; font-weight: 900; font-size: 150px; line-height: 0.8; letter-spacing: -0.05em; color: #0e1116">LATEEF</div>
+      <div style="position: absolute; right: 28px; bottom: 26px; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.2em; color: #f3eee2">1968</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px; min-width: 0">
+      <h1 style="margin: 0; font-family: 'League Spartan', sans-serif; font-weight: 900; font-size: 168px; line-height: 0.78; letter-spacing: -0.06em">ESTAN<br>TE</h1>
+      <div style="height: 6px; width: 120px; background: #f3c13a"></div>
+      <p style="margin: 0; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; color: #b7b2a6">EM DESTAQUE · DISCO · RECOMENDADO POR GABRIEL</p>
+      <h2 style="margin: 0; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 44px; line-height: 1">The Blue Yusef Lateef</h2>
+      <p style="margin: 0; font-size: 18px; line-height: 1.5; color: #d8d3c7; max-width: 520px">[por que ouvir, escrito por quem recomendou]</p>
+      <div style="display: flex; gap: 10px; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.14em">
+        <span style="padding: 8px 12px; border: 2px solid #f3eee2">JAZZ</span>
+        <a href="#" style="padding: 8px 12px; background: #f3eee2; color: #0e1116; text-decoration: none">OUVIR ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px">
+    <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+      <article style="display: flex; flex-direction: column; gap: 10px">
+        <div style="{{c.cover}}">
+          <span style="{{c.titleStyle}}">{{c.t}}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.16em; color: #b7b2a6">
+          <span>{{c.a}}</span><span>{{c.k}} · {{c.y}}</span>
+        </div>
+        <span style="font-size: 14px; color: #d8d3c7">por {{c.by}}</span>
+      </article>
+    </sc-for>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const raw = [
+      ['LAUGHING STOCK', 'TALK TALK', '1991', 'DISCO', 'Walter', '#d8c9a3', '#0e1116'],
+      ['INFERNO', 'BOARDS OF CANADA', '2026', 'DISCO', 'Walter', '#c9481f', '#f3c13a'],
+      ['AXES', 'OKONSKI', '2026', 'FAIXA', 'Beto', '#f3eee2', '#3b63f5'],
+      ['PET SOUNDS', 'THE BEACH BOYS', '1966', 'DISCO', 'Yuri', '#2f6b4f', '#f3eee2']
+    ];
+    const cards = raw.map(([t, a, y, k, by, bg, fg]) => ({
+      t, a, y, k, by,
+      cover: 'height: 190px; background: ' + bg + '; display: flex; align-items: flex-end; padding: 16px; box-sizing: border-box',
+      titleStyle: 'font-family: League Spartan, sans-serif; font-weight: 900; font-size: 38px; line-height: 0.85; letter-spacing: -0.03em; color: ' + fg
+    }));
+    return { cards };
+  }
+}
+</script>
+</body>
+</html>

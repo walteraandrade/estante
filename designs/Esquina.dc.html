@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Esquina</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0;background:#1b1310;font-family:'Bricolage Grotesque',sans-serif;color:#f4e6d6}
+a{color:#f2c14e}a:hover{color:#ffd978}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1000px; box-sizing: border-box; padding: 40px 48px; background: #1b1310; display: flex; gap: 40px; overflow: hidden">
+  <aside style="width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 28px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-weight: 800; font-size: 56px; line-height: 0.9; letter-spacing: -0.04em; color: #f2c14e">estante</h1>
+      <span style="font-size: 15px; color: #bda893">estudos de psicoacústica</span>
+    </div>
+    <nav style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #bda893">QUEM TROUXE</span>
+      <sc-for list="{{people}}" as="p" hint-placeholder-count="4">
+        <a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 44px; color: #f4e6d6; text-decoration: none; font-size: 16px">
+          <span style="{{p.avatar}}">{{p.i}}</span>{{p.name}}<span style="margin-left: auto; color: #bda893; font-size: 14px">{{p.n}}</span>
+        </a>
+      </sc-for>
+    </nav>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #bda893">TEMAS</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="padding: 8px 14px; border-radius: 999px; background: #e07b4f; color: #1b1310; font-weight: 600; font-size: 14px">jazz</span>
+        <span style="padding: 8px 14px; border-radius: 999px; background: #2a1d17; color: #f4e6d6; font-size: 14px">ambient</span>
+        <span style="padding: 8px 14px; border-radius: 999px; background: #2a1d17; color: #f4e6d6; font-size: 14px">brasileira</span>
+        <span style="padding: 8px 14px; border-radius: 999px; background: #2a1d17; color: #f4e6d6; font-size: 14px">pós-punk</span>
+        <span style="padding: 8px 14px; border-radius: 999px; background: #2a1d17; color: #f4e6d6; font-size: 14px">shoegaze</span>
+        <span style="padding: 8px 14px; border-radius: 999px; background: #2a1d17; color: #f4e6d6; font-size: 14px">experimental</span>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex-grow: 1; display: flex; flex-direction: column; gap: 18px; min-width: 0">
+    <label style="display: flex; gap: 12px; align-items: center; padding: 14px 14px 14px 20px; background: #261a15; border: 1px solid #3a2a22; border-radius: 18px">
+      <span style="font-size: 16px; color: #bda893; flex-grow: 1">cole um link do Spotify, YouTube ou Bandcamp…</span>
+      <span style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: #f2c14e; color: #1b1310; font-weight: 600">recomendar</span>
+    </label>
+    <sc-for list="{{posts}}" as="p" hint-placeholder-count="3">
+      <article style="display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #261a15; border-radius: 18px">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 15px; color: #bda893">
+          <span style="{{p.avatar}}">{{p.i}}</span>
+          <span><strong style="color: #f4e6d6; font-weight: 600">{{p.by}}</strong> pôs {{p.what}} na estante · {{p.when}}</span>
+        </div>
+        <div style="display: flex; gap: 20px">
+          <div style="{{p.cover}}"><div style="{{p.sun}}"></div></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+            <h2 style="margin: 0; font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -0.02em">{{p.t}}</h2>
+            <span style="font-size: 17px">{{p.a}} · {{p.y}}</span>
+            <p style="margin: 6px 0 0; font-size: 16px; line-height: 1.5; color: #e3d3c1">[por que ouvir, escrito por quem recomendou]</p>
+            <div style="display: flex; gap: 8px; margin-top: auto">
+              <a href="#" style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #f2c14e; text-decoration: none; font-size: 15px">ouvir</a>
+              <span style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; border-radius: 999px; background: #2f221b; font-size: 14px; color: #e3d3c1">#{{p.tag}}</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </sc-for>
+  </main>
+
+  <aside style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; padding-top: 4px">
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #bda893">DISCOS OU FAIXAS</span>
+    <div style="display: flex; padding: 4px; background: #261a15; border-radius: 999px">
+      <span style="flex-grow: 1; text-align: center; padding: 10px 0; border-radius: 999px; background: #3a2a22; font-size: 15px">tudo</span>
+      <span style="flex-grow: 1; text-align: center; padding: 10px 0; font-size: 15px; color: #bda893">discos</span>
+      <span style="flex-grow: 1; text-align: center; padding: 10px 0; font-size: 15px; color: #bda893">faixas</span>
+    </div>
+    <span style="margin-top: 18px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #bda893">NA ESTANTE</span>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{mini}}" as="m" hint-placeholder-count="9">
+        <div style="{{m}}"></div>
+      </sc-for>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tone = { Walter: '#e07b4f', Beto: '#a7bf8f', Gabriel: '#f2c14e', Yuri: '#c9a0dc' };
+    const avatar = (name) => 'display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: ' + tone[name] + '; color: #1b1310; font-weight: 800; font-size: 14px';
+    const people = [['Walter', 4], ['Gabriel', 2], ['Beto', 2], ['Yuri', 2]].map(([name, n]) => ({ name, n, i: name[0], avatar: avatar(name) }));
+    const posts = [
+      ['Walter', 'um disco', 'há 2 dias', 'Mateo Solo Bien Se Lame', 'Eduardo Mateo', '1972', 'latina', '#6b2d2d', '#e9d8b4'],
+      ['Gabriel', 'uma faixa', 'há 5 dias', 'Um Girassol da Cor do Seu Cabelo', 'Milton Nascimento, Lô Borges', '1972', 'brasileira', '#d9a441', '#5a3a22'],
+      ['Beto', 'uma faixa', 'semana passada', 'Axes', 'Okonski, Rachel Kitchlew', '2026', 'jazz', '#e9e4d6', '#2b3a67']
+    ].map(([by, what, when, t, a, y, tag, c1, c2]) => ({
+      by, what, when, t, a, y, tag, i: by[0], avatar: avatar(by),
+      cover: 'position: relative; width: 170px; height: 170px; flex-shrink: 0; border-radius: 12px; overflow: hidden; background: ' + c1,
+      sun: 'position: absolute; left: 30px; top: 40px; width: 110px; height: 110px; border-radius: 50%; background: ' + c2
+    }));
+    const mini = ['#2d4a3e', '#c9481f', '#1f3f8f', '#2f6b4f', '#b8322a', '#d9d3c4', '#8a1d3a', '#4b5d3a', '#3c4f5c'].map((c) => 'aspect-ratio: 1; border-radius: 8px; background: ' + c);
+    return { people, posts, mini };
+  }
+}
+</script>
+</body>
+</html>

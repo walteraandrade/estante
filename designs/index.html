@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>estante · 5 direções</title>
+<style>
+body { margin: 0; background: #050505; color: #ddd; font: 14px/1.4 system-ui, sans-serif; }
+#nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 6px; padding: 10px 16px; background: #050505; border-bottom: 1px solid #222; }
+#nav a { padding: 8px 12px; border-radius: 4px; color: #aaa; text-decoration: none; }
+#nav a[aria-current='page'] { background: #222; color: #fff; }
+#stage { width: 1280px; margin: 24px auto; }
+#error { color: #ff7b6b; padding: 24px; white-space: pre-wrap; }
+</style>
+<script type="module" src="./viewer.js"></script>
+</head>
+<body>
+<nav id="nav"></nav>
+<div id="stage"></div>
+<div id="error"></div>
+</body>
+</html>

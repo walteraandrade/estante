@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Xerox</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#0e0e0e;font-family:'IBM Plex Mono',monospace;color:#ebe6db}
+a{color:#ff5a3c}a:hover{color:#ff8b73}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1000px; box-sizing: border-box; padding: 44px 56px; background-color: #0e0e0e; background-image: radial-gradient(#2a2a2a 1px, transparent 1.2px); background-size: 6px 6px; display: flex; flex-direction: column; gap: 30px; overflow: hidden">
+  <header style="display: flex; justify-content: space-between; align-items: flex-start">
+    <div style="position: relative">
+      <h1 style="margin: 0; font-family: 'Archivo Black', sans-serif; font-size: 150px; line-height: 0.8; letter-spacing: -0.04em; color: #ebe6db">ESTANTE</h1>
+      <span style="position: absolute; right: -20px; top: -44px; transform: rotate(4deg); padding: 6px 10px; border: 3px solid #e2412b; color: #ff5a3c; font-weight: 500; font-size: 14px; letter-spacing: 0.08em">Nº 01 · PSICOACÚSTICA</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end; font-size: 13px">
+      <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #ebe6db; color: #0e0e0e; text-decoration: none; font-family: 'Archivo Black', sans-serif; font-size: 15px">COLAR UM LINK</a>
+      <span style="color: #b9b4aa">fotocopiado por: Walter · Beto · Gabriel · Yuri</span>
+      <span style="color: #b9b4aa">[ TUDO ]  discos  faixas  #jazz  #ambient  #pós-rock</span>
+    </div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; align-items: start">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+      <article style="{{it.card}}">
+        <div style="{{it.cover}}"></div>
+        <span style="{{it.stamp}}">{{it.k}}</span>
+        <h2 style="margin: 0; font-family: 'Archivo Black', sans-serif; font-size: 22px; line-height: 0.95; text-transform: uppercase; color: #111">{{it.t}}</h2>
+        <span style="font-size: 13px; color: #333">{{it.a}} — {{it.y}}</span>
+        <sc-if value="{{it.hasNote}}" hint-placeholder-val="{{true}}">
+          <p style="margin: 0; font-size: 12px; line-height: 1.45; color: #222">{{it.note}}</p>
+        </sc-if>
+        <span style="font-size: 12px; color: #444">indicado por {{it.by}}</span>
+      </article>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const raw = [
+      ['Laughing Stock', 'Talk Talk', '1991', 'disco', 'Walter', '[por que ouvir]'],
+      ['Axes', 'Okonski, Rachel Kitchlew', '2026', 'faixa', 'Beto', ''],
+      ['Inferno', 'Boards of Canada', '2026', 'disco', 'Walter', ''],
+      ['Remain in Light', 'Talking Heads', '1980', 'disco', 'Yuri', ''],
+      ['Zero Sum', 'The Smile', '2024', 'faixa', 'Beto', ''],
+      ['Frog in Boiling Water', 'DIIV', '2024', 'disco', 'Gabriel', '[por que ouvir]'],
+      ['Lotus Light', 'Tim Hecker', '2023', 'faixa', 'Yuri', ''],
+      ['Romance', 'Fontaines D.C.', '2024', 'disco', 'Walter', '']
+    ];
+    const tilt = [-1.6, 1.2, -0.6, 1.8, 0.8, -1.4, 1.1, -0.9];
+    const shades = ['#3a3a3a', '#6d6d6d', '#1c1c1c', '#8a8a8a', '#4c4c4c', '#262626', '#7a7a7a', '#303030'];
+    const items = raw.map(([t, a, y, k, by, note], i) => ({
+      t, a, y, by, note, hasNote: note.length > 0, k: k.toUpperCase(),
+      card: 'position: relative; display: flex; flex-direction: column; gap: 8px; padding: 14px 14px 16px; background: #ebe6db; transform: rotate(' + tilt[i] + 'deg); box-shadow: 0 6px 0 #000',
+      cover: 'height: 150px; background-color: ' + shades[i] + '; background-image: radial-gradient(#0e0e0e 1.3px, transparent 1.6px); background-size: 5px 5px',
+      stamp: 'position: absolute; right: 12px; top: 120px; transform: rotate(-6deg); padding: 3px 8px; border: 2px solid #d63a22; color: #b8301b; background: #ebe6db; font-weight: 500; font-size: 12px; letter-spacing: 0.1em'
+    }));
+    return { items };
+  }
+}
+</script>
+</body>
+</html>
