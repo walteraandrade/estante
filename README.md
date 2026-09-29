@@ -1,7 +1,7 @@
 # estante
 
 Shared shelf of album and track recommendations for the *estudos de psicoacústica* group.
-SvelteKit app with the Hono API mounted at `/api/*` (`src/routes/api/[...path]/+server.ts`), libSQL (SQLite locally, Turso in production), and the original no-build HTML/JS page in `static/`.
+SvelteKit app with the Hono API mounted at `/api/*` (`src/routes/api/[...path]/+server.ts`), libSQL (SQLite locally, Turso in production), and a Svelte 5 UI in `src/routes/+page.svelte` and `src/lib/components/`. Filters live in the URL (`?kind=&user=&tag=&q=`), so a filtered view can be shared.
 
 ## Local
 
@@ -37,7 +37,7 @@ vercel env add TURSO_DATABASE_URL production   # and the other three
 vercel deploy --prod
 ```
 
-`@sveltejs/adapter-vercel` builds the functions; `static/` is served from the CDN.
+`@sveltejs/adapter-vercel` builds the functions; `static/` (icons, manifest) is served from the CDN.
 
 ## Do WhatsApp para a estante
 
@@ -47,12 +47,12 @@ vercel deploy --prod
 - **iPhone:** o Safari não tem esse menu para sites, então use um Atalho. No app Atalhos, crie um novo com:
   1. *Receber* **URLs e Texto** da **Planilha de Compartilhamento**
   2. *Codificar URL* (Entrada do Atalho)
-  3. *Texto*: `https://<seu-domínio>/index.html?url=` seguido da variável *URL Codificado*
+  3. *Texto*: `https://<seu-domínio>/?url=` seguido da variável *URL Codificado*
   4. *Abrir URLs* (Texto)
 
   Depois disso, no WhatsApp: segure o link → *Compartilhar* → **estante**.
 
-Qualquer `…/index.html?url=<link>` (ou `?text=` com um link no meio) funciona assim.
+Qualquer `…/?url=<link>` (ou `?text=` com um link no meio) funciona assim. Links antigos para `/index.html` redirecionam para `/`.
 
 **O histórico inteiro, de uma vez.** Exporte a conversa (*Exportar conversa → Sem mídia*) no iPhone ou no Android e rode:
 
