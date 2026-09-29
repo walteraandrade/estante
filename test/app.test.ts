@@ -1,7 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { createApp } from '../src/api.js'
-import { openDb } from '../src/db.js'
+import { serializeSigned } from 'hono/utils/cookie'
+import { createApp, type AppOptions } from '../src/api.js'
+import { migrate, openDb, upsertUser } from '../src/db.js'
+import { jevModerator } from '../src/moderation.js'
 import { parseBandcamp, parseSpotify, parseYoutube, isKnownHost } from '../src/meta.js'
 import { parseChat } from '../scripts/import-chat.js'
 
@@ -16,18 +18,26 @@ const SPOTIFY_TRACK = `<meta property="og:title" content="Axes"/>
 <meta property="og:type" content="music.song"/>
 <meta property="og:image" content="https://i.scdn.co/image/def"/>`
 
-const setup = (fetchStub?: typeof fetch) => {
-  const app = createApp({ db: openDb(':memory:'), groupCode: 'segredo', secret: 's', fetch: fetchStub })
-  const call = (path: string, init: RequestInit & { cookie?: string } = {}) =>
+const setup = (opts: Partial<AppOptions> = {}) => {
+  const db = opts.db ?? openDb(':memory:')
+  const app = createApp({ db, groupCode: 'segredo', adminCode: 'chave', secret: 's', ...opts })
+  const call = (path: string, init: RequestInit & { cookie?: string; ip?: string } = {}) =>
     app.request(`/api${path}`, {
       ...init,
-      headers: { 'content-type': 'application/json', ...(init.cookie ? { cookie: init.cookie } : {}) },
+      headers: {
+        'content-type': 'application/json',
+        ...(init.cookie ? { cookie: init.cookie } : {}),
+        ...(init.ip ? { 'x-real-ip': init.ip } : {}),
+      },
     })
-  const login = async (name: string) => {
-    const res = await call('/login', { method: 'POST', body: JSON.stringify({ name, code: 'segredo' }) })
+  const login = async (name: string, code = 'segredo') => {
+    const res = await call('/login', { method: 'POST', body: JSON.stringify({ name, code }) })
     return (res.headers.get('set-cookie') ?? '').split(';')[0]
   }
-  return { call, login }
+  const post = (cookie: string, title = 'Laughing Stock') =>
+    call('/recs', { method: 'POST', cookie, body: JSON.stringify({ kind: 'album', title, artist: 'Talk Talk' }) })
+  const titles = async (cookie: string) => (await (await call('/recs', { cookie })).json()).items.map((r: { title: string }) => r.title)
+  return { db, call, login, post, titles }
 }
 
 test('spotify album page becomes an album with year and cover', () => {
@@ -154,9 +164,154 @@ test('only the author deletes a recommendation', async () => {
   assert.equal((await call(`/recs/${rec.id}`, { method: 'DELETE', cookie: beto })).status, 200)
 })
 
+test('removing only hides; an admin sees who removed it and puts it back', async () => {
+  const { call, login, post, titles } = setup()
+  const beto = await login('Beto')
+  const mod = await login('Walter', 'chave')
+  const rec = await (await post(beto)).json()
+
+  assert.equal((await call(`/recs/${rec.id}`, { method: 'DELETE', cookie: beto })).status, 200)
+  assert.deepEqual(await titles(beto), [])
+  assert.deepEqual((await (await call('/users', { cookie: beto })).json()).find((u: { name: string }) => u.name === 'Beto').recs, 0)
+
+  assert.equal((await call('/review', { cookie: beto })).status, 403)
+  const { removed } = await (await call('/review', { cookie: mod })).json()
+  assert.deepEqual(removed.map((r: { title: string; removed_by_name: string }) => [r.title, r.removed_by_name]), [['Laughing Stock', 'Beto']])
+
+  assert.equal((await call(`/recs/${rec.id}/restore`, { method: 'POST', cookie: beto })).status, 403)
+  assert.equal((await call(`/recs/${rec.id}/restore`, { method: 'POST', cookie: mod })).status, 200)
+  assert.deepEqual(await titles(beto), ['Laughing Stock'])
+})
+
+test('admin comes from the admin code, not from the name', async () => {
+  const { call, login, post } = setup()
+  const mod = await login('Walter', 'chave')
+  const me = await (await call('/me', { cookie: mod })).json()
+  assert.equal(me.admin, true)
+
+  const posing = await login('Walter')
+  assert.equal((await (await call('/me', { cookie: posing })).json()).admin, false)
+  assert.equal((await call('/review', { cookie: posing })).status, 403)
+
+  const yuri = await login('Yuri')
+  const rec = await (await post(yuri)).json()
+  assert.equal((await call(`/recs/${rec.id}`, { method: 'DELETE', cookie: posing })).status, 404)
+  assert.equal((await call(`/recs/${rec.id}`, { method: 'DELETE', cookie: mod })).status, 200)
+})
+
+test('changing the group code signs out old sessions; pre-fingerprint cookies keep working', async () => {
+  const db = openDb(':memory:')
+  const before = setup({ db })
+  const beto = await before.login('Beto')
+  assert.equal((await before.call('/me', { cookie: beto })).status, 200)
+
+  const legacy = (await serializeSigned('estante_uid', String((await upsertUser(db, 'Yuri')).id), 's')).split(';')[0]
+  const res = await before.call('/me', { cookie: legacy })
+  assert.equal(res.status, 200)
+  const upgraded = (res.headers.get('set-cookie') ?? '').split(';')[0]
+  assert.match(upgraded, /^estante_uid=\d+\.member\./)
+
+  const after = setup({ db, groupCode: 'novo' })
+  assert.equal((await after.call('/me', { cookie: beto })).status, 401)
+  assert.equal((await after.call('/me', { cookie: upgraded })).status, 401)
+  assert.equal((await after.call('/me', { cookie: await after.login('Beto', 'novo') })).status, 200)
+})
+
+test('guessing the code is throttled per address, and the window slides', async () => {
+  let clock = 1_000_000
+  const { call } = setup({ now: () => clock })
+  const attempt = (code: string, ip = '1.1.1.1') => call('/login', { method: 'POST', ip, body: JSON.stringify({ name: 'Beto', code }) })
+  for (let i = 0; i < 10; i++) assert.equal((await attempt('chute')).status, 403)
+  assert.equal((await attempt('segredo')).status, 429)
+  assert.equal((await attempt('segredo', '2.2.2.2')).status, 200)
+  clock += 16 * 60 * 1000
+  assert.equal((await attempt('segredo')).status, 200)
+})
+
+test('new names and posts are capped far above what a member does', async () => {
+  let clock = 1_000_000
+  const { call, login, post } = setup({ now: () => clock })
+  const named = (name: string) => call('/login', { method: 'POST', ip: '3.3.3.3', body: JSON.stringify({ name, code: 'segredo' }) })
+  for (let i = 0; i < 10; i++) assert.equal((await named(`p${i}`)).status, 200)
+  assert.equal((await named('p10')).status, 429)
+  assert.equal((await named('p0')).status, 200)
+
+  const me = await login('Beto')
+  for (let i = 0; i < 30; i++) assert.equal((await post(me, `t${i}`)).status, 201)
+  assert.equal((await post(me, 'demais')).status, 429)
+  clock += 61 * 60 * 1000
+  assert.equal((await post(me, 'depois')).status, 201)
+})
+
+test('what moderation holds only its author and admins see, and it fails open', async () => {
+  let verdict: () => Promise<boolean> = async () => true
+  const { call, login, post, titles } = setup({ moderate: () => verdict() })
+  const beto = await login('Beto')
+  const yuri = await login('Yuri')
+  const mod = await login('Walter', 'chave')
+
+  const held = await (await post(beto, 'COMPRE SEGUIDORES')).json()
+  assert.equal(held.status, 'held')
+  assert.deepEqual(await titles(beto), ['COMPRE SEGUIDORES'])
+  assert.deepEqual(await titles(yuri), [])
+  assert.equal((await (await call('/recs', { cookie: yuri })).json()).total, 0)
+  assert.deepEqual((await (await call('/review', { cookie: mod })).json()).held.map((r: { id: number }) => r.id), [held.id])
+
+  assert.equal((await (await post(mod, 'do admin')).json()).status, 'visible')
+  verdict = async () => {
+    throw new Error('jev fora do ar')
+  }
+  assert.equal((await (await post(yuri, 'Spirit of Eden')).json()).status, 'visible')
+
+  await call(`/recs/${held.id}/restore`, { method: 'POST', cookie: mod })
+  assert.ok((await titles(yuri)).includes('COMPRE SEGUIDORES'))
+})
+
+test('jev moderator asks one yes/no question and holds only near-certain junk', async () => {
+  const sent: { url: string; init: RequestInit }[] = []
+  let p = 0.95
+  const stub = (async (url: string, init: RequestInit) => {
+    sent.push({ url, init })
+    return Response.json({ model: 'jev-1.13', answers: { junk: { type: 'noul', noul: p } }, usage: { input_tokens: 90, output_tokens: 0 } })
+  }) as typeof fetch
+  const moderate = jevModerator('key', stub)
+  const rec = { kind: 'album' as const, title: 'Laughing Stock', artist: 'Talk Talk', description: 'o silêncio também toca' }
+  assert.equal(await moderate(rec), true)
+  p = 0.6
+  assert.equal(await moderate(rec), false)
+
+  assert.equal(sent[0].url, 'https://api.typesafe.ai/v1/systemone')
+  assert.equal((sent[0].init.headers as Record<string, string>).authorization, 'Bearer key')
+  const body = JSON.parse(String(sent[0].init.body))
+  assert.equal(body.model, 'jev-latest')
+  assert.equal(body.state.title, 'Laughing Stock')
+  assert.equal(body.questions.junk.type, 'noul')
+
+  const down = jevModerator('key', (async () => new Response('no', { status: 503 })) as typeof fetch)
+  await assert.rejects(down(rec))
+})
+
+test('an existing shelf gains the moderation columns and keeps its recommendations', async () => {
+  const db = openDb(':memory:')
+  await db.batch(
+    [
+      `create table users (id integer primary key, name text not null unique collate nocase, created_at text not null default '2026-01-01T00:00:00Z')`,
+      `create table recommendations (id integer primary key, user_id integer not null, kind text not null, title text not null, artist text not null,
+        year integer, url text, cover_url text, description text not null default '', tags text not null default '', created_at text not null default '2026-01-01T00:00:00Z')`,
+      `insert into users (name) values ('Beto')`,
+      `insert into recommendations (user_id, kind, title, artist) values (1, 'album', 'Laughing Stock', 'Talk Talk')`,
+    ],
+    'write',
+  )
+  await migrate(db)
+  await migrate(db)
+  const { login, titles } = setup({ db })
+  assert.deepEqual(await titles(await login('Yuri')), ['Laughing Stock'])
+})
+
 test('meta route reads a spotify link through the injected fetch', async () => {
   const stub = (async () => new Response(SPOTIFY_TRACK)) as typeof fetch
-  const { call, login } = setup(stub)
+  const { call, login } = setup({ fetch: stub })
   const me = await login('Walter')
   const res = await call(`/meta?url=${encodeURIComponent('https://open.spotify.com/track/6T8B')}`, { cookie: me })
   assert.equal((await res.json()).title, 'Axes')

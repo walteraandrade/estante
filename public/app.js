@@ -98,6 +98,7 @@ const post = (r) => {
     ? h('button', { class: 'link', onclick: (e) => { note.classList.toggle('clamped'); e.target.textContent = note.classList.contains('clamped') ? 'ler tudo' : 'recolher' } }, 'ler tudo')
     : null
   const mine = state.me?.id === r.user_id
+  const canRemove = mine || state.me?.admin
   return h(
     'article',
     { class: 'post', id: `rec-${r.id}` },
@@ -116,6 +117,7 @@ const post = (r) => {
         { class: 'post-text' },
         h('h3', {}, r.title),
         h('p', { class: 'artist' }, r.artist, r.year ? ` · ${r.year}` : ''),
+        r.status === 'held' ? h('p', { class: 'held' }, 'Só você vê esta por enquanto: ela espera alguém da moderação dar uma olhada.') : null,
         note,
         more,
         h(
@@ -123,7 +125,7 @@ const post = (r) => {
           { class: 'post-actions' },
           href ? h('a', { class: 'listen', href, target: '_blank', rel: 'noopener noreferrer' }, 'ouvir') : null,
           r.tags.map((t) => pill(`#${t}`, t === state.filter.tag, () => setFilter({ tag: t === state.filter.tag ? '' : t }))),
-          mine ? h('button', { class: 'link remove', onclick: () => remove(r) }, 'tirar da estante') : null,
+          canRemove ? h('button', { class: 'link remove', onclick: () => remove(r) }, 'tirar da estante') : null,
         ),
       ),
     ),
@@ -162,6 +164,7 @@ const paintShelf = () => {
 
 const paint = () => {
   $('#rightSide').hidden = false
+  $('#modBlock').hidden = !state.me?.admin
   paintSession()
   paintFilters()
   paintShelf()
@@ -170,6 +173,7 @@ const paint = () => {
 
 const paintGate = () => {
   $('#rightSide').hidden = true
+  $('#modBlock').hidden = true
   paintSession()
   paintFilters()
   $('#count').textContent = ''
@@ -232,6 +236,7 @@ const loadAll = async () => {
   const [users, tags] = await Promise.all([api('/users'), api('/tags')])
   Object.assign(state, { users, tags })
   await loadRecs()
+  if (state.me.admin) paintReview().catch(() => {})
 }
 
 const setFilter = (patch) => {
@@ -264,9 +269,49 @@ const logout = async () => {
 }
 
 const remove = async (r) => {
-  if (!confirm(`Tirar "${r.title}" da estante?`)) return
+  const whose = state.me?.id === r.user_id ? '' : ` (de ${r.user_name})`
+  if (!confirm(`Tirar "${r.title}"${whose} da estante?`)) return
   await api(`/recs/${r.id}`, { method: 'DELETE' })
   await loadAll()
+}
+
+const reviewItem = (r, note, actions) =>
+  h(
+    'div',
+    { class: 'review-item' },
+    h('span', { class: 'review-cover' }, artwork(r)),
+    h('div', { class: 'review-text' }, h('strong', {}, r.title), h('span', {}, `${r.artist} · de ${r.user_name}`), h('span', { class: 'hint' }, note)),
+    h('div', { class: 'review-actions' }, ...actions),
+  )
+
+const act = (label, run, primary = false) =>
+  h('button', { type: 'button', class: primary ? 'primary' : 'ghost', onclick: async (e) => {
+    e.target.disabled = true
+    await run().catch((err) => alert(err.message))
+    await Promise.all([paintReview(), loadAll()])
+  } }, label)
+
+const restore = (r) => () => api(`/recs/${r.id}/restore`, { method: 'POST' })
+const takeDown = (r) => () => api(`/recs/${r.id}`, { method: 'DELETE' })
+
+const paintReview = async () => {
+  const { held, removed } = await api('/review')
+  $('#reviewCount').textContent = held.length ? String(held.length) : ''
+  $('#heldList').replaceChildren(
+    ...(held.length
+      ? held.map((r) => reviewItem(r, `segurada pelo filtro · ${relative(r.created_at)}`, [act('aprovar', restore(r), true), act('tirar', takeDown(r))]))
+      : [h('p', { class: 'hint' }, 'Nada esperando.')]),
+  )
+  $('#removedList').replaceChildren(
+    ...(removed.length
+      ? removed.map((r) => reviewItem(r, `tirada por ${r.removed_by_name ?? 'alguém'} · ${relative(r.removed_at)}`, [act('devolver', restore(r))]))
+      : [h('p', { class: 'hint' }, 'Nada foi tirado.')]),
+  )
+}
+
+const openReview = async () => {
+  await paintReview()
+  $('#reviewDialog').showModal()
 }
 
 const readTags = (raw) => raw.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean)
@@ -381,6 +426,7 @@ const boot = () => {
     if (b) setFilter({ kind: b.dataset.kind })
   })
   $('#search').addEventListener('input', debounce((e) => setFilter({ q: e.target.value.trim() }), 220))
+  $('#reviewOpen').addEventListener('click', openReview)
   $('#composer').addEventListener('submit', (e) => {
     e.preventDefault()
     openAdd($('#composerUrl').value.trim())
