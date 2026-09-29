@@ -1,10 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { serializeSigned } from 'hono/utils/cookie'
-import { createApp, type AppOptions } from '../src/api.js'
-import { migrate, openDb, upsertUser } from '../src/db.js'
-import { jevModerator } from '../src/moderation.js'
-import { parseBandcamp, parseSpotify, parseYoutube, isKnownHost } from '../src/meta.js'
+import { createApp, type AppOptions } from '../src/lib/server/api.js'
+import { migrate, openDb, upsertUser } from '../src/lib/server/db.js'
+import { jevModerator } from '../src/lib/server/moderation.js'
+import { parseBandcamp, parseSpotify, parseYoutube, isKnownHost } from '../src/lib/server/meta.js'
 import { parseChat } from '../scripts/import-chat.js'
 
 const SPOTIFY_ALBUM = `<meta property="og:title" content="Inferno - Album by Boards of Canada | Spotify"/>

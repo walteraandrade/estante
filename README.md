@@ -1,7 +1,7 @@
 # estante
 
 Shared shelf of album and track recommendations for the *estudos de psicoacústica* group.
-Hono API + libSQL (SQLite locally, Turso in production) + a no-build HTML/JS page in `public/`.
+SvelteKit app with the Hono API mounted at `/api/*` (`src/routes/api/[...path]/+server.ts`), libSQL (SQLite locally, Turso in production), and the original no-build HTML/JS page in `static/`.
 
 ## Local
 
@@ -9,7 +9,8 @@ Hono API + libSQL (SQLite locally, Turso in production) + a no-build HTML/JS pag
 pnpm install
 pnpm dev          # http://localhost:3300, group code "psicoacustica", data in ./estante.db
 pnpm test         # in-memory database, no network
-pnpm typecheck
+pnpm typecheck    # svelte-check
+pnpm build        # Vercel output in .vercel/output
 ```
 
 ## Env
@@ -36,7 +37,7 @@ vercel env add TURSO_DATABASE_URL production   # and the other three
 vercel deploy --prod
 ```
 
-Vercel picks up `src/index.ts` as the Hono entry and serves `public/` from the CDN.
+`@sveltejs/adapter-vercel` builds the functions; `static/` is served from the CDN.
 
 ## Do WhatsApp para a estante
 
