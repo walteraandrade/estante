@@ -44,11 +44,13 @@ vercel deploy --prod
 **Um link por vez, pelo menu de compartilhar.** A estante abre com o formulário já preenchido. Se a pessoa ainda não entrou, pede login primeiro.
 
 - **Android:** abra a estante no Chrome, menu ⋮ → *Instalar app* (ou *Adicionar à tela inicial*). A partir daí, no WhatsApp: segure o link → *Compartilhar* → **estante**.
-- **iPhone:** o Safari não tem esse menu para sites, então use um Atalho. No app Atalhos, crie um novo com:
-  1. *Receber* **URLs e Texto** da **Planilha de Compartilhamento**
-  2. *Codificar URL* (Entrada do Atalho)
-  3. *Texto*: `https://<seu-domínio>/?url=` seguido da variável *URL Codificado*
-  4. *Abrir URLs* (Texto)
+- **iPhone:** o Safari não coloca sites no menu de compartilhar, então a ponte é um atalho do app **Atalhos** da Apple (em inglês, **Shortcuts**). Ele vem instalado desde o iOS 13; se não estiver no iPhone, foi apagado e volta de graça pela [App Store](https://apps.apple.com/br/app/atalhos/id915249334). Crie um atalho novo (**+**), chame de **estante** e monte assim (nomes em português / inglês; os rótulos podem variar um pouco entre versões do iOS):
+  1. Nos detalhes do atalho (ⓘ), ligue *Mostrar na Folha de Compartilhamento* / *Show in Share Sheet* e deixe aceitar **URLs** e **Texto**
+  2. *Codificar URL* / *URL Encode*, aplicado à *Entrada do Atalho* / *Shortcut Input*
+  3. *Texto* / *Text*: `https://<seu-domínio>/?url=` seguido da variável do passo 2
+  4. *Abrir URLs* / *Open URLs*, com o texto do passo 3
+
+  Só uma pessoa precisa montar: depois é segurar o atalho → *Compartilhar* → *Copiar Link do iCloud* / *Copy iCloud Link* e mandar no grupo. Quem recebe toca no link e em *Adicionar Atalho*.
 
   Depois disso, no WhatsApp: segure o link → *Compartilhar* → **estante**.
 
