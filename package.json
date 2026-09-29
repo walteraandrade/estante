@@ -3,19 +3,26 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/dev.ts",
-    "start": "tsx src/dev.ts",
-    "typecheck": "tsc --noEmit",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo \"\"",
+    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "node --import tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
     "@libsql/client": "^0.18.0",
     "hono": "^4.13.10"
   },
   "devDependencies": {
+    "@sveltejs/adapter-vercel": "^6.3.4",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@types/node": "^22.20.4",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
     "tsx": "^4.23.15",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vite": "^8.3.1"
   }
 }

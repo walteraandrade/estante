@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { migrate, openDb, upsertUser } from '../src/db.js'
-import { fetchMeta, type Meta } from '../src/meta.js'
+import { migrate, openDb, upsertUser } from '../src/lib/server/db.js'
+import { fetchMeta, type Meta } from '../src/lib/server/meta.js'
 
 type Shared = { name: string; url: string; at: string }
 
