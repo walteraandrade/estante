@@ -280,10 +280,10 @@ test('jev moderator asks one yes/no question and holds only near-certain junk', 
   p = 0.6
   assert.equal(await moderate(rec), false)
 
-  assert.equal(sent[0].url, 'https://api.typesafe.ai/v1/systemone')
+  assert.equal(sent[0].url, 'https://openrouter.ai/api/v1/systemone')
   assert.equal((sent[0].init.headers as Record<string, string>).authorization, 'Bearer key')
   const body = JSON.parse(String(sent[0].init.body))
-  assert.equal(body.model, 'jev-latest')
+  assert.equal(body.model, 'typesafe/jev-1.13')
   assert.equal(body.state.title, 'Laughing Stock')
   assert.equal(body.questions.junk.type, 'noul')
 

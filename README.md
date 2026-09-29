@@ -21,7 +21,7 @@ pnpm typecheck
 | `GROUP_CODE` | `psicoacustica` | the code shared in the WhatsApp group |
 | `SESSION_SECRET` | dev value | `openssl rand -hex 32` |
 | `ADMIN_CODE` | none | optional; logging in with it instead of `GROUP_CODE` makes that session a moderator |
-| `TYPESAFE_API_KEY` | none | optional; turns on the Jev junk filter |
+| `OPENROUTER_API_KEY` | none | optional; turns on the Jev junk filter (needs OpenRouter credits) |
 
 Production refuses to start without the first four. Tables and new columns are created on first request.
 
@@ -78,4 +78,4 @@ Nothing here adds a step for members. The idea is to make damage undoable rather
 - **Moderators** log in with `ADMIN_CODE` under their own name. Being a moderator belongs to the session, not the name, so typing a moderator's name with the group code gives no powers. Moderators can take down any post and see the *moderação* panel: posts held by the filter, and everything removed, with who removed it.
 - **Changing a code signs out everyone who got in with the old one.** The cookie carries an HMAC of the code it was issued under. If `GROUP_CODE` leaks, change it and share the new one in the group. Cookies from before this change are upgraded silently on the next visit.
 - **Invisible limits**, counted in the `hits` table because serverless memory doesn't last between requests: 10 wrong codes per IP per 15 min, 10 new names per IP per day, 30 posts per person and 60 per IP per hour.
-- **Jev filter** ([TypeSafe AI](https://typesafe.ai)), only when `TYPESAFE_API_KEY` is set. Each new post is sent as one yes/no question ("is this junk rather than a music recommendation?"). Only answers at 0.9 or above are held: the author still sees the post, with a note, and everyone else sees it after a moderator approves. If Jev is slow (3 s timeout) or down, the post goes up as usual. Title, artist, link, tags and comment go to TypeSafe; moderators' own posts are not sent.
+- **Jev filter** ([TypeSafe AI](https://typesafe.ai), called through OpenRouter as `typesafe/jev-1.13`), only when `OPENROUTER_API_KEY` is set. Each new post is sent as one yes/no question ("is this junk rather than a music recommendation?"). Only answers at 0.9 or above are held: the author still sees the post, with a note, and everyone else sees it after a moderator approves. If Jev is slow (3 s timeout) or down, the post goes up as usual. Title, artist, link, tags and comment go to OpenRouter and TypeSafe; moderators' own posts are not sent.
