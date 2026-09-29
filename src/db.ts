@@ -103,23 +103,41 @@ export const listUsers = async (db: Client) => {
   return rs.rows.map((r) => ({ id: Number(r.id), name: String(r.name), recs: Number(r.recs) }))
 }
 
-export const listRecs = async (db: Client, f: RecFilter = {}): Promise<Rec[]> => {
-  const conditions: [string, InValue[]][] = [
+export type RecPage = { items: Rec[]; next: string | null; total: number }
+
+const CURSOR = /^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ)~(\d+)$/
+
+const cursorOf = (r: Rec) => `${r.created_at}~${r.id}`
+
+type Condition = [string, InValue[]]
+
+const where = (conditions: Condition[]) => (conditions.length ? 'where ' + conditions.map(([s]) => s).join(' and ') : '')
+
+export const listRecs = async (db: Client, f: RecFilter = {}, page: { limit?: number; cursor?: string } = {}): Promise<RecPage> => {
+  const limit = page.limit ?? 30
+  const filters: Condition[] = [
     f.kind ? ['r.kind = ?', [f.kind]] : null,
     f.user ? ['r.user_id = ?', [f.user]] : null,
     f.tag ? [`(',' || r.tags || ',') like ?`, [`%,${f.tag.toLowerCase()},%`]] : null,
     f.q ? ['(r.title like ? or r.artist like ? or r.description like ?)', Array(3).fill(`%${f.q}%`)] : null,
-  ].filter((c): c is [string, InValue[]] => c !== null)
-  const where = conditions.length ? 'where ' + conditions.map(([s]) => s).join(' and ') : ''
-  const rs = await db.execute({
-    sql: `select r.*, u.name as user_name
-          from recommendations r join users u on u.id = r.user_id
-          ${where}
-          order by r.created_at desc, r.id desc
-          limit 500`,
-    args: conditions.flatMap(([, a]) => a),
-  })
-  return rs.rows.map((r) => toRec(r as Record<string, unknown>))
+  ].filter((c): c is Condition => c !== null)
+  const at = page.cursor?.match(CURSOR)
+  const after: Condition[] = at ? [['(r.created_at < ? or (r.created_at = ? and r.id < ?))', [at[1], at[1], Number(at[2])]]] : []
+  const conditions = [...filters, ...after]
+  const [rows, count] = await Promise.all([
+    db.execute({
+      sql: `select r.*, u.name as user_name
+            from recommendations r join users u on u.id = r.user_id
+            ${where(conditions)}
+            order by r.created_at desc, r.id desc
+            limit ?`,
+      args: [...conditions.flatMap(([, a]) => a), limit + 1],
+    }),
+    db.execute({ sql: `select count(*) as n from recommendations r ${where(filters)}`, args: filters.flatMap(([, a]) => a) }),
+  ])
+  const all = rows.rows.map((r) => toRec(r as Record<string, unknown>))
+  const items = all.slice(0, limit)
+  return { items, next: all.length > limit ? cursorOf(items[items.length - 1]) : null, total: Number(count.rows[0].n) }
 }
 
 export const listTags = async (db: Client) => {

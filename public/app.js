@@ -36,7 +36,7 @@ const api = async (path, init = {}) => {
   return data
 }
 
-const state = { me: null, recs: [], users: [], tags: [], filter: { kind: '', user: '', tag: '', q: '' } }
+const state = { me: null, recs: [], next: null, total: 0, loading: false, request: 0, users: [], tags: [], filter: { kind: '', user: '', tag: '', q: '' } }
 
 const hash = (s) => [...s].reduce((a, c) => Math.imul(a ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261)
 const pick = (list, key) => list[hash(key.toLowerCase()) % list.length]
@@ -46,7 +46,7 @@ const relative = (iso) => {
   const fmt = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
   const steps = [[60, 'second', 1], [3600, 'minute', 60], [86400, 'hour', 3600], [604800, 'day', 86400], [2629800, 'week', 604800], [31557600, 'month', 2629800], [Infinity, 'year', 31557600]]
   const [, unit, size] = steps.find(([limit]) => Math.abs(s) < limit)
-  return fmt.format(Math.round(s / size), unit)
+  return fmt.format(Math.trunc(s / size), unit)
 }
 
 const safeHref = (url) => (url && /^https?:\/\//.test(url) ? url : null)
@@ -132,26 +132,32 @@ const post = (r) => {
 
 const paintMini = () => {
   const recent = state.recs.slice(0, 9)
-  $('#miniBlock').hidden = recent.length === 0 || Object.values(state.filter).some(Boolean)
+  $('#miniBlock').hidden = recent.length === 0 || isFiltered()
   $('#mini').replaceChildren(...recent.map((r) => h('a', { href: `#rec-${r.id}`, title: `${r.title} · ${r.artist}` }, artwork(r))))
 }
 
+const isFiltered = () => Object.values(state.filter).some(Boolean)
+
+const paintMore = () => {
+  $('#more').textContent = state.loading && state.recs.length ? 'carregando mais…' : ''
+}
+
 const paintShelf = () => {
-  const n = state.recs.length
-  const filtered = Object.values(state.filter).some(Boolean)
-  $('#count').textContent = filtered ? `${n} ${n === 1 ? 'recomendação' : 'recomendações'} neste recorte` : ''
+  const n = state.total
+  $('#count').textContent = isFiltered() ? `${n} ${n === 1 ? 'recomendação' : 'recomendações'} neste recorte` : ''
   $('#shelf').replaceChildren(
-    ...(n
+    ...(state.recs.length
       ? state.recs.map(post)
       : [
           h(
             'div',
             { class: 'empty' },
-            h('strong', {}, filtered ? 'Nada neste recorte.' : 'A estante está vazia.'),
-            filtered ? 'Tente outro filtro, ou limpe a busca.' : 'Cole acima o link do disco que você não para de ouvir.',
+            h('strong', {}, isFiltered() ? 'Nada neste recorte.' : 'A estante está vazia.'),
+            isFiltered() ? 'Tente outro filtro, ou limpe a busca.' : 'Cole acima o link do disco que você não para de ouvir.',
           ),
         ]),
   )
+  paintMore()
 }
 
 const paint = () => {
@@ -179,10 +185,45 @@ const paintGate = () => {
   )
 }
 
+const PAGE = 30
+
+const fetchPage = (cursor) => {
+  const q = new URLSearchParams([...Object.entries(state.filter).filter(([, v]) => v), ['limit', String(PAGE)], ...(cursor ? [['cursor', cursor]] : [])])
+  return api(`/recs?${q}`)
+}
+
 const loadRecs = async () => {
-  const q = new URLSearchParams(Object.entries(state.filter).filter(([, v]) => v))
-  state.recs = await api(`/recs?${q}`)
+  const request = ++state.request
+  state.loading = true
+  const page = await fetchPage(null).finally(() => request === state.request && (state.loading = false))
+  if (request !== state.request) return
+  Object.assign(state, { recs: page.items, next: page.next, total: page.total })
   paint()
+  watchMore()
+}
+
+const loadMore = async () => {
+  if (!state.next || state.loading) return
+  const request = state.request
+  state.loading = true
+  paintMore()
+  try {
+    const page = await fetchPage(state.next)
+    if (request !== state.request) return
+    Object.assign(state, { recs: [...state.recs, ...page.items], next: page.next, total: page.total })
+    $('#shelf').append(...page.items.map(post))
+  } finally {
+    if (request === state.request) state.loading = false
+    paintMore()
+  }
+  watchMore()
+}
+
+const moreObserver = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && loadMore(), { rootMargin: '800px 0px' })
+
+const watchMore = () => {
+  moreObserver.unobserve($('#more'))
+  if (state.next) moreObserver.observe($('#more'))
 }
 
 const loadAll = async () => {
@@ -216,7 +257,9 @@ const openLogin = (then) => {
 
 const logout = async () => {
   await api('/logout', { method: 'POST' })
-  Object.assign(state, { me: null, recs: [], users: [], tags: [] })
+  state.request++
+  Object.assign(state, { me: null, recs: [], next: null, total: 0, users: [], tags: [] })
+  watchMore()
   paintGate()
 }
 

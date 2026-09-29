@@ -158,6 +158,7 @@ button.link:hover { color: var(--ink); }
 .count:empty { display: none; }
 
 .posts { display: flex; flex-direction: column; gap: 18px; }
+.more { min-height: 24px; margin: 0; text-align: center; font-size: 14px; color: var(--muted); }
 
 .post {
   display: flex;

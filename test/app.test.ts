@@ -94,22 +94,46 @@ test('a friend recommends, everyone sees it, filters work', async () => {
 
   assert.equal((await call('/recs')).status, 401)
   const read = (path: string) => Promise.resolve(call(path, { cookie: yuri })).then((r) => r.json())
-  const all = await read('/recs')
+  const all = (await read('/recs')).items
   assert.equal(all.length, 2)
   assert.equal(all.find((r: { title: string }) => r.title === 'Axes').url, null)
 
-  const albums = await read('/recs?kind=album')
+  const albums = (await read('/recs?kind=album')).items
   assert.deepEqual(albums.map((r: { title: string }) => r.title), ['Laughing Stock'])
   assert.deepEqual(albums[0].tags, ['pós-rock'])
 
   const tagged = await read('/recs?tag=pós-rock')
-  assert.equal(tagged.length, 1)
+  assert.equal(tagged.items.length, 1)
+  assert.equal(tagged.total, 1)
 
-  const found = await read('/recs?q=silêncio')
+  const found = (await read('/recs?q=silêncio')).items
   assert.equal(found[0].user_name, 'Beto')
 
   const users = await read('/users')
   assert.deepEqual(users.map((u: { name: string; recs: number }) => [u.name, u.recs]), [['Beto', 1], ['Yuri', 1]])
+})
+
+test('pages walk the whole shelf once, newest first, even within the same second', async () => {
+  const { call, login } = setup()
+  const me = await login('Walter')
+  for (const n of [1, 2, 3, 4, 5]) {
+    await call('/recs', { method: 'POST', cookie: me, body: JSON.stringify({ kind: n % 2 ? 'album' : 'track', title: `t${n}`, artist: 'a' }) })
+  }
+  const page = (q: string) => Promise.resolve(call(`/recs?limit=2${q}`, { cookie: me })).then((r) => r.json())
+  const walk = async (cursor: string | null, seen: string[][]): Promise<string[][]> => {
+    const p = await page(cursor ? `&cursor=${encodeURIComponent(cursor)}` : '')
+    assert.equal(p.total, 5)
+    const next = [...seen, p.items.map((r: { title: string }) => r.title)]
+    return p.next ? walk(p.next, next) : next
+  }
+  assert.deepEqual(await walk(null, []), [['t5', 't4'], ['t3', 't2'], ['t1']])
+
+  const albums = await page('&kind=album')
+  assert.equal(albums.total, 3)
+  assert.deepEqual(albums.items.map((r: { title: string }) => r.title), ['t5', 't3'])
+
+  const junk = await page('&cursor=nonsense')
+  assert.deepEqual(junk.items.map((r: { title: string }) => r.title), ['t5', 't4'])
 })
 
 test('same name logs back into the same user, case-insensitive', async () => {

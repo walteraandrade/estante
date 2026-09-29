@@ -80,12 +80,16 @@ export const createApp = (o: AppOptions) => {
   app.get('/recs', auth, async (c) => {
     const q = c.req.query()
     return c.json(
-      await listRecs(o.db, {
-        kind: kindOf(q.kind),
-        user: Number(q.user) || undefined,
-        tag: text(q.tag, 40) || undefined,
-        q: text(q.q, 80) || undefined,
-      }),
+      await listRecs(
+        o.db,
+        {
+          kind: kindOf(q.kind),
+          user: Number(q.user) || undefined,
+          tag: text(q.tag, 40) || undefined,
+          q: text(q.q, 80) || undefined,
+        },
+        { limit: Math.min(100, Math.max(1, Number(q.limit) || 30)), cursor: text(q.cursor, 40) || undefined },
+      ),
     )
   })
 
