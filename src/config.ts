@@ -14,6 +14,6 @@ export const appFromEnv = (dev = false) =>
     groupCode: env('GROUP_CODE', dev ? 'psicoacustica' : undefined),
     adminCode: process.env.ADMIN_CODE || undefined,
     secret: env('SESSION_SECRET', dev ? 'dev-secret-change-me' : undefined),
-    moderate: process.env.TYPESAFE_API_KEY ? jevModerator(process.env.TYPESAFE_API_KEY) : undefined,
+    moderate: process.env.OPENROUTER_API_KEY ? jevModerator(process.env.OPENROUTER_API_KEY) : undefined,
     secureCookie: !dev,
   })
